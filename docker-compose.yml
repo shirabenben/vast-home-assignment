@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mizar:
+    build:
+      context: .
+      dockerfile: nfs-server.Dockerfile
+    privileged: true
+    ports:
+      - "2049:2049"
+    volumes:
+      - nfs-data:/exports
+    networks:
+      - nfs-network
+
+  alcor:
+    build:
+      context: .
+      dockerfile: nfs-client.Dockerfile
+    privileged: true
+    depends_on:
+      - mizar
+    networks:
+      - nfs-network
+    volumes:
+      - ./setup-nfs-test.sh:/usr/local/bin/setup-nfs-test.sh:ro
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+
+volumes:
+  nfs-data:
+
+networks:
+  nfs-network:
+    driver: bridge
